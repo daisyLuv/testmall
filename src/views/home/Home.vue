@@ -6,62 +6,8 @@
     <home-swiper :banners="banners" />
     <recommend-view :recommends="recommends" />
     <feature-view />
-    <tab-control class="tab-control" 
-                 :titles="['流行','新款','精选']" 
-                 @tabClick="tabClick"/>
-  
-    <ul>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-      <li>列表</li>
-    </ul>
+    <tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick" />
+    <goods-list :goods="showGoods" />
   </div>
 </template>
 
@@ -72,8 +18,9 @@ import FeatureView from "./childComps/FeatureView";
 
 import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/tabControl/TabControl";
+import GoodsList from '@/components/content/goods/GoodsList.vue';
 
-import { getHomeMultidata } from "network/home";
+import { getHomeMultidata, getHomeGoods } from "network/home";
 
 export default {
   name: "Home",
@@ -82,8 +29,9 @@ export default {
     HomeSwiper,
     RecommendView,
     FeatureView,
-    TabControl
-},
+    TabControl,
+    GoodsList
+  },
   data() {
     return {
       // 用 result 存储数据
@@ -92,23 +40,69 @@ export default {
       banners: [],
       recommends: [],
       goods: {
-        'pop': {page: 0, list: []},
-        'new': {page: 0, list: []},
-        'sell': {page: 0, list: []},
-      }
+        'pop': { page: 0, list: [] },
+        'new': { page: 0, list: [] },
+        'sell': { page: 0, list: [] },
+      },
+      currentType: 'pop'
+    }
+  },
+  computed: {
+    showGoods() {
+      return this.goods[this.currentType].list
     }
   },
   created() {
     // 组件创建完后就调用数据，在此建立生命周期函数
     // 1.请求多个数据
-    getHomeMultidata().then(res => {
-      // 函数最后返回的是一个 promise，用then得到数据，存储在data 的 result 里面，箭头函数的this指向上一级，this.result指的是组件的data里的result。
-      // res={}，不另外存储的话，函数执行完后res会回收，res指向请求回来的数据{}的指针被回收，垃圾回收机制判断{}孤立，然后回收
-      // console.log(res);
-      // this.result = res;
-      this.banners = res.data.banner.list;
-      this.recommends = res.data.recommend.list;
-    })
+    this.getHomeMultidata()
+
+    // 请求商品数据
+    this.getHomeGoods('pop')
+    this.getHomeGoods('new')
+    this.getHomeGoods('sell')
+
+  },
+  methods: {
+    /**
+     * 事件监听相关的方法
+     */
+    tabClick(index) {
+      switch (index) {
+        case 0:
+          this.currentType = 'pop'
+          break
+        case 1:
+          this.currentType = 'new'
+          break
+        case 2:
+          this.currentType = 'sell'
+          break
+      }
+    },
+    /**
+       * 网络请求相关的方法
+       */
+    getHomeMultidata() {
+      getHomeMultidata().then(res => {
+        // 函数最后返回的是一个 promise，用then得到数据，存储在data 的 result 里面，箭头函数的this指向上一级，this.result指的是组件的data里的result。
+        // res={}，不另外存储的话，函数执行完后res会回收，res指向请求回来的数据{}的指针被回收，垃圾回收机制判断{}孤立，然后回收
+        // console.log(res);
+        // this.result = res;
+        this.banners = res.data.banner.list;
+        this.recommends = res.data.recommend.list;
+      })
+    },
+    getHomeGoods(type) {
+      const page = this.goods[type].page + 1
+      getHomeGoods(type, page).then(res => {
+        // console.log(res)
+        this.goods[type].list.push(...res.data.list)
+        this.goods[type].page += 1
+
+        // this.$refs.scroll.finishPullUp()
+      })
+    }
   }
 }
 </script>
@@ -129,8 +123,9 @@ export default {
   z-index: 9;
 }
 
-.tab-control{
+.tab-control {
   position: sticky;
   top: 44px;
+  z-index: 9;
 }
 </style>

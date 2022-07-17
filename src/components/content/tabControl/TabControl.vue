@@ -28,7 +28,8 @@ export default {
   methods: {
     itemClick(index) {
       this.currentIndex = index;
-      // this.$emit('tabClick', index)
+      // 传出去
+      this.$emit('tabClick', index)
     }
   },
   components: {
