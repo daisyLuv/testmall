@@ -3,11 +3,15 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-    <home-swiper :banners="banners" />
-    <recommend-view :recommends="recommends" />
-    <feature-view />
-    <tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick" />
-    <goods-list :goods="showGoods" />
+    <scroll class="content" ref="scroll">
+      <home-swiper :banners="banners" ref="swiper"/>
+      <recommend-view :recommends="recommends" />
+      <feature-view />
+      <tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick" />
+      <goods-list :goods="showGoods" />
+    </scroll>
+    <!-- 组件不能直接监听，需要加.native 监听组件根元素的原生事件-->
+    <back-top @click.native="backClick"/>
   </div>
 </template>
 
@@ -18,9 +22,12 @@ import FeatureView from "./childComps/FeatureView";
 
 import NavBar from "components/common/navbar/NavBar";
 import TabControl from "components/content/tabControl/TabControl";
-import GoodsList from '@/components/content/goods/GoodsList.vue';
+import GoodsList from 'components/content/goods/GoodsList.vue';
+import BackTop from 'components/common/backTop/BackTop.vue';
 
 import { getHomeMultidata, getHomeGoods } from "network/home";
+
+import Scroll from 'components/common/scroll/Scroll.vue';
 
 export default {
   name: "Home",
@@ -30,8 +37,10 @@ export default {
     RecommendView,
     FeatureView,
     TabControl,
-    GoodsList
-  },
+    GoodsList,
+    Scroll,
+    BackTop
+},
   data() {
     return {
       // 用 result 存储数据
@@ -80,6 +89,9 @@ export default {
           break
       }
     },
+    backClick() {
+      this.$refs.scroll.scrollTo(0, 0, 500)
+    },
     /**
        * 网络请求相关的方法
        */
@@ -99,8 +111,6 @@ export default {
         // console.log(res)
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page += 1
-
-        // this.$refs.scroll.finishPullUp()
       })
     }
   }
@@ -109,7 +119,9 @@ export default {
 
 <style scoped>
 #home {
-  padding-top: 44px;
+  /* padding-top: 44px; */
+  height: 100vh;
+  position: relative;
 }
 
 .home-nav {
@@ -127,5 +139,15 @@ export default {
   position: sticky;
   top: 44px;
   z-index: 9;
+}
+
+.content {
+  /* height: calc(100% - 93px); */
+  overflow: hidden;
+  position: absolute;
+  top: 44px;
+  bottom: 49px;
+  left: 0;
+  right: 0;
 }
 </style>
