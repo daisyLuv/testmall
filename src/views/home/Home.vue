@@ -3,15 +3,16 @@
     <nav-bar class="home-nav">
       <div slot="center">购物街</div>
     </nav-bar>
-    <scroll class="content" ref="scroll">
-      <home-swiper :banners="banners" ref="swiper"/>
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll" :pull-up-load="true"
+      @pillingUp="loadMore">
+      <home-swiper :banners="banners" ref="swiper" />
       <recommend-view :recommends="recommends" />
       <feature-view />
       <tab-control class="tab-control" :titles="['流行', '新款', '精选']" @tabClick="tabClick" />
       <goods-list :goods="showGoods" />
     </scroll>
     <!-- 组件不能直接监听，需要加.native 监听组件根元素的原生事件-->
-    <back-top @click.native="backClick"/>
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
   </div>
 </template>
 
@@ -40,7 +41,7 @@ export default {
     GoodsList,
     Scroll,
     BackTop
-},
+  },
   data() {
     return {
       // 用 result 存储数据
@@ -53,7 +54,8 @@ export default {
         'new': { page: 0, list: [] },
         'sell': { page: 0, list: [] },
       },
-      currentType: 'pop'
+      currentType: 'pop',
+      isShowBackTop: true
     }
   },
   computed: {
@@ -92,6 +94,16 @@ export default {
     backClick() {
       this.$refs.scroll.scrollTo(0, 0, 500)
     },
+    contentScroll(position) {
+      // console.log(position);
+      this.isShowBackTop = (-position.y) > 1000
+    },
+    loadMore() {
+      this.getHomeGoods(this.currentType)
+
+      // 刷新可滚动区域高度
+      // this.$refs.scroll.scroll.refresh()
+    },
     /**
        * 网络请求相关的方法
        */
@@ -111,6 +123,8 @@ export default {
         // console.log(res)
         this.goods[type].list.push(...res.data.list)
         this.goods[type].page += 1
+
+        this.$refs.scroll.finishPullUp()
       })
     }
   }
@@ -150,4 +164,10 @@ export default {
   left: 0;
   right: 0;
 }
+
+/*.content {*/
+/*height: calc(100% - 93px);*/
+/*overflow: hidden;*/
+/*margin-top: 44px;*/
+/*}*/
 </style>

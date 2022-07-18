@@ -5,36 +5,36 @@
 </template>
 
 <script>
-  export default {
-    name: 'BackTop',
-    components: {
-      
-    },
-    data() {
-      return {
-        
-      }
-    },
-    methods:{
-      // backClick() {
-      
-      // }
-    },
-    created(){
-      
+export default {
+  name: 'BackTop',
+  components: {
+
+  },
+  data() {
+    return {
+
     }
+  },
+  methods: {
+    // backClick() {
+
+    // }
+  },
+  created() {
+
   }
+}
 </script>
 
 <style scoped>
-  .back-top {
-    position: fixed;
-    right: 8px;
-    bottom: 55px;
-  }
+.back-top {
+  position: fixed;
+  right: 8px;
+  bottom: 55px;
+}
 
-  .back-top img {
-    width: 43px;
-    height: 43px;
-  }
+.back-top img {
+  width: 43px;
+  height: 43px;
+}
 </style>
